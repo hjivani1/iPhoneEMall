@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>User Cart</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css"  href="stylesheets/styleUser.css">
+        <link rel="stylesheet" type="text/css"  href="stylesheets/newheader.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+		<script type="text/javascript" src="javascripts/jquery-1.11.1.min.js"></script>
+	</head>
+	<script>
+		cartModule = angular.module('cart',[]);
+		cartModule.controller('cartController',function($scope,$http){
+			if (!sessionStorage.getItem('userid')){
+				alert("You have been signed-out, please login again!");
+				location.href = '/login';
+			}else{	
+				var url = '/cartctrl/findbyuser/'+sessionStorage.getItem('userid');
+				$http.get(url).then(function (response){
+					$scope.postMsg= response.data;
+					if(!$scope.postMsg.Failed){
+						$scope.cart = $scope.postMsg;
+					}
+				})
+			}
+
+			//get the sum
+			$scope.getItemsPriceSum = function(){
+				var sum = 0;
+				angular.forEach($scope.cart, function(each){
+					sum += each.cPrice * each.cQuantity;
+				});
+				return sum.toFixed(2);
+			};
+			
+			
+			//Delete an item
+			$scope.removeitem= function(id){
+				if(confirm("You really want to delete this item?")){
+					var url = '/cartctrl/' + id;
+					$http.delete(url).then(function (response){
+						$scope.postMsg= response.data;
+						if(!$scope.postMsg.Failed){
+							url = '/cartctrl';
+							$http.get(url).then(function (response){
+								$scope.postMsg= response.data;
+								if(!$scope.postMsg.Failed){
+									$scope.cart = $scope.postMsg
+								}
+							})
+						}
+					}, function (response){
+						$scope.postMsg = { 'Failed': true, 'message': "Error Status: " +  response.statusText};
+					});
+				}
+			}
+		
+		// edit the inventory
+			$scope.editinventory= function(productID, Quantity){
+				var url = '/ManageProduct/editinventory'
+				var config = {
+						headers : {
+								'Accept': 'application/json'
+								}
+				}
+				var data = {
+					product_ID: productID,
+					
+					quantity: Quantity,
+				}
+				$http.post(url,JSON.stringify(data), config).then(function (response){
+					$scope.postMsg= response.data;
+				})
+			}
+		
+		
+		// clear the cart
+			$scope.clearcart= function(){
+				url = '/ManageTransaction/newtransaction';
+				
+				var config = {
+						headers : {
+								'Accept': 'application/json'
+								}
+				}
+				
+				angular.forEach($scope.cart, function(each){
+					
+					var data = {
+						user_ID: sessionStorage.getItem('userid'),
+						product_ID: each.cId,
+						
+						price: each.cPrice,
+						quantity:each.cQuantity
+					}
+					
+					$http.post(url,JSON.stringify(data), config).then(function (response){
+						$scope.postMsg= response.data;
+						if(!$scope.postMsg.Failed){
+							var url = '/cartctrl/' + each._id;
+							$http.delete(url).then(function (response){
+								$scope.postMsg= response.data;
+								if(!$scope.postMsg.Failed){
+									$scope.editinventory(each.cId, each.cQuantity);
+									location.href = '/products';
+								}
+							})
+						}
+					})
+				});
+			}
+		})
+
+		cartModule.controller('searchController',function($scope,$http){
+			$scope.searchitems= function(key){
+				sessionStorage.setItem('keyword',$scope.search);
+				location.href = '/search';
+			}
+		})		
+	</script>
+	
+	<body ng-app = "cart">
+        <!--=-------
+        Top
+    ------------>
+      <!-- Grey with black text -->
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+	<ul class="navbar-nav">
+	  <li class="nav-item">
+		<a class="nav-link" href="/">Home</a>
+	  </li>
+	  <li class="nav-item">
+		<a class="nav-link" href="/login">Login or Signup</a>
+	  </li>
+	  <li class="nav-item">
+		<a class="nav-link" href="/products">Buy iPhones</a>
+	  </li>
+	  <li class="nav-item">
+		<a class="nav-link" href="/profile">My Account Info</a>
+	  </li>
+	  <li class="nav-item active">
+		<a class="nav-link" href="/cart">Your Cart</a>
+	  </li>
+	</ul>
+  </nav>
+	<div class="banner-bg banner-bg1">	
+		<div class="container">
+			   
+		</div>
+	
+	
+        <!--=-------
+        Cart
+    ------------>
+	<div id="cart">
+	<div class="container" ng-controller = "cartController">
+		<form ng-show = "cart.length != 0">
+		<div class="col-md-9 cart-items">
+			<div class="title">
+				<h3>Review Cart</h3>
+			</div>
+			 <div class="cart-header" ng-repeat = "item in cart">
+				 
+				 
+				 <div style="color:red; font-weight: bolder;">
+					 <a ng-click="removeitem(item._id)">Click here to delete from cart</a>
+				 </div>
+				 <div class="cart-sec simpleCart_shelfItem">
+						<div class="cart-item cyc">
+							
+							<img ng-src="{{item.cImgSrc}}" class="img-responsive" alt=""/>
+						</div>
+					   <div class="cart-item-info">
+						
+						<ul class="qty">
+							<li><p>Price : ${{item.cPrice}}</p></li>
+							<li><p>Qty : {{item.cQuantity}}</p></li>
+						</ul>
+						
+					   </div>
+					   <div class="clearfix"></div>
+											
+				  </div>
+			 </div>	
+		 </div>
+		 <div class="col-md-3 cart-total">
+			 
+			 <div class="price-details">
+				 <h3>Price Details</h3>
+				 <span>Total</span>
+				 <span class="total1">{{getItemsPriceSum()}}</span>
+				 
+				 
+				 <div class="clearfix"></div>				 
+			 </div>	
+			 <ul class="total_price">
+			   <li class="last_price"> <h4>TOTAL</h4></li>	
+			   <li class="last_price">$<span ng-bind = "getItemsPriceSum()*1"></span></li>
+			   <div class="clearfix"> </div>
+			 </ul>
+			 <div class="clearfix"></div>
+			 <a class="order" ng-click = "clearcart()">Place Order</a>
+			</div>
+		</form>
+		<div class="clearfix"> </div>
+		<div class="container noresult" ng-show = "cart.length == 0">
+			<h3>No items in cart :(</h3>
+		</div>
+	 </div>
+</div>
+ <!--footer-->
+	 <div class="footer">
+		<div class="container">
+			<div class="">
+				<div class="text-center">
+					<h1>Online Company Information</h1>
+					<br/>
+					<address>
+						<h2><div>One Apple Park Way<br/>
+							Cupertino, CA 95014
+							<br/>
+							Phone:<span> (408) 996–1010</span>
+						</div>
+						</h2>
+					</address>
+				</div>
+			</div>
+			<br/>
+		</div>
+	</div>
+    </body>
+</html>

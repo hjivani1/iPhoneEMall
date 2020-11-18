@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Manager Login</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script type="text/javascript">
+		loginModule = angular.module("login", []);
+		loginModule.controller('loginController', function ($scope, $http) {
+			$scope.loginpost = function () {
+
+
+
+				var url = '/ManagerAccount/login';
+				var config = {
+					headers: {
+						'Accept': 'application/json'
+					}
+				};
+				var data = {
+					name: $scope.manager_name,
+					password: $scope.manager_password
+				};
+
+				$http.post(url, JSON.stringify(data), config).then(function (response) {
+					$scope.postMsg = response.data;
+					if (!$scope.postMsg.Failed) {
+						$scope.manager = $scope.postMsg.Manager;
+
+						sessionStorage.setItem('managername', $scope.manager.name);
+						sessionStorage.setItem('managerid', $scope.manager._id);
+						location.href = '/managerHome';
+
+					}
+				}, function (response) {
+					$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+				});
+			}
+		});
+	</script>
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item active">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/login">Login or Signup</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/products">Buy iPhones</a>
+			</li>
+
+		</ul>
+	</nav>
+	<div class="banner-bg banner-bg1">
+		<div class="container">
+		</div>
+
+		<div class="container" ng-app="login">
+
+			<div class="" ng-controller="loginController">
+				<div class="text-center">
+
+					<h2>Admin Login</h2>
+				</div>
+				<form class="form-horizontal" ng-submit="loginpost()">
+
+
+					<div class="form-group">
+						<label for="manager_name">Username:</label>
+						<input ng-model="manager_name" id="manager_name" class="form-control" type="text"
+							name="manager_name">
+					</div>
+
+
+					<div class="form-group">
+						<label for="manager_password">Password:</label>
+						<input ng-model="manager_password" id="manager_password" class="form-control" type="password"
+							name="manager_password">
+					</div>
+
+					<div>
+						<div class="text-center" ng-show="postMsg.Failed">
+							<div class="alert">{{postMsg.message}}</div>
+						</div>
+					</div>
+
+					<div>
+						<div class="text-center">
+
+							<button type="submit" value="Login" class="btn btn-primary">Login</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<br />
+		<div class="footer">
+			<div class="container">
+				<div class="">
+					<div class="text-center">
+						<h1>Online Company Information</h1>
+						<br />
+						<address>
+							<h2>
+								<div>One Apple Park Way<br />
+									Cupertino, CA 95014
+									<br />
+									Phone:<span> (408) 996–1010</span>
+								</div>
+							</h2>
+						</address>
+					</div>
+				</div>
+				<br />
+			</div>
+		</div>
+</body>
+
+</html>

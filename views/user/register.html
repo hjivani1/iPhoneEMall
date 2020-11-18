@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Register New User</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+	<script>
+		registerModule = angular.module('register', []);
+		registerModule.controller('registerController', function ($scope, $http) {
+			$scope.registerpost = function () {
+				if ($scope.password1 != $scope.password2) {
+					$scope.postMsg = { 'Failed': true, 'message': 'two password doesnot match!' };
+				} else {
+					var url = '/register';
+					var config = {
+						headers: {
+							'Accept': 'application/json'
+						}
+					}
+
+					var data = {
+						username: $scope.username,
+						password: $scope.password1,
+						name: $scope.name,
+						address: $scope.address,
+						email: $scope.email,
+						tel: $scope.tel
+					}
+
+					$http.post(url, JSON.stringify(data), config).then(function (response) {
+						$scope.postMsg = response.data;
+						if (!$scope.postMsg.Failed) {
+							location.href = '/login';
+						}
+					}, function (response) {
+						$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+					});
+				}
+			}
+		})
+	</script>
+</head>
+
+<body ng-app="register">
+	<!-- Grey with black text -->
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="/login">Login or Signup</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/products">Buy iPhones</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/profile">My Account Info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/cart">Your Cart</a>
+			</li>
+		</ul>
+	</nav>
+		<div id="register" class="container" ng-app="register">
+			<div ng-controller="registerController">
+				<form class="form-horizontal" name="registerform" ng-submit="registerpost()">
+					<div>
+						<h3 class="text-center">Sign-up an account:</h3>
+
+						<div>
+							<span>Name: </span>
+							<input ng-model="name" class="form-control" type="text" required name="name">
+						</div>
+						<div>
+							<span>Address:</span>
+							<input ng-model="address" class="form-control" type="text" required name="address">
+						</div>
+						<div>
+							<span>Email Address:</span>
+							<input ng-model="email" class="form-control" type="email" name="email">
+						</div>
+						<div>
+							<span>Telephone Number:</span>
+							<input ng-model="tel" class="form-control" type="text" name="tel"
+								ng-pattern="/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/">
+						</div>
+
+						<div class="alert col-md-12 text-center"
+							ng-show="registerform.email.$dirty && registerform.email.$invalid">
+							<span ng-show="registerform.email.$error.email">Enter correct email</span>
+						</div>
+						<div class="alert col-md-12 text-center"
+							ng-show="registerform.tel.$dirty && registerform.tel.$invalid">
+							<span ng-show="registerform.tel.$error.pattern">Enter correct phone number</span>
+						</div>
+					</div>
+					<div class="clearfix"> </div>
+					<div>
+						<div>
+							<span>User Name:</span>
+							<input ng-model="username" class="form-control" type="text" required name="username">
+						</div>
+						<div>
+							<span>Password:</span>
+							<input ng-model="password1" class="form-control" type="password" required name="password1">
+						</div>
+						<div>
+							<span>Confirm Password:</span>
+							<input ng-model="password2" class="form-control" type="password" required name="password2">
+						</div>
+						<div>
+							<div class="register-but">
+								<button type="submit" value="Submit" class="btn btn-default"
+									ng-disabled="registerform.email.$error.email || registerform.tel.$error.pattern ">Submit</button>
+							</div>
+						</div>
+						<div class="clearfix"> </div>
+					</div>
+				</form>
+				<div class="alert col-md-12 text-center" ng-show="postMsg.Failed">{{postMsg.message}}</div>
+				<div class="clearfix"> </div>
+				<br />
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				<div class="">
+					<div class="text-center">
+						<h1>Online Company Information</h1>
+						<br />
+						<address>
+							<h2>
+								<div>One Apple Park Way<br />
+									Cupertino, CA 95014
+									<br />
+									Phone:<span> (408) 996–1010</span>
+								</div>
+							</h2>
+						</address>
+					</div>
+				</div>
+				<br />
+			</div>
+		</div>
+</body>
+
+</html>

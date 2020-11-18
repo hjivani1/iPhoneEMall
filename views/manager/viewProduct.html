@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Product List</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script>
+        var viewModule = angular.module('viewProduct', []);
+
+        viewModule.controller('viewController', ($scope, $http, $location) => {
+            $scope.current_username = sessionStorage.getItem('managername');
+
+            $scope.clearSession = function () {
+                sessionStorage.clear();
+            }
+            var url = "/ManageProduct";
+
+            $http.get(url).then((response) => {
+                $scope.viewProduct = response.data;
+                $scope.productNames = []
+                $scope.profit = [];
+                for (var i in $scope.viewProduct) {
+                    $scope.productNames.push(JSON.stringify($scope.viewProduct[i].productName));
+                    $scope.profit.push($scope.viewProduct[i].volume * $scope.viewProduct[i].price);
+                }
+
+
+            }, (response) => {
+                $scope.getErrMsg = "Error Status: " + response.statusText;
+            });
+
+
+
+
+            $scope.deleteProduct = function (productid) {
+                var url = "/ManageProduct";
+                $http.delete(url + '/' + productid).then(function (response) {
+                    $http.get(url).then((response2) => {
+                        $scope.viewProduct = response2.data;
+                    }, (response2) => {
+                        $scope.getErrMsg = "Error Status: " + response2.statusText;
+                    });
+                }, function (response) {
+                    alert("fail to delete");
+                });
+            };
+            $scope.seeDetail = function (productid) {
+                sessionStorage.setItem("productID", productid);
+                location.href = '/updateProductInfo';
+            }
+        });
+    </script>
+</head>
+
+<body class="text-center" ng-app="viewProduct" ng-controller="viewController">
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/login">Login or Signup</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" ng-click="clearSession()" class="color3" href="/">Log Out</a>
+            </li>
+
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div>
+            <h3>View iPhones Inventory</h3>
+        </div>
+        <div>
+            <table class="table table-dark table-hover" ng-show="viewProduct.length">
+
+                <tr>
+                    <th>Product ID</th>
+                    <th>iPhone Model</th>
+                    <th>Color</th>
+                    <th>Memory</th>
+                    <th>On-hand</th>
+                    <th>Price</th>
+                    <th>Details</th>
+                    <th></th>
+                </tr>
+                <tr ng-repeat="product in viewProduct">
+                    <td>
+                        <a ng-click="seeDetail(product._id)">
+                            {{product._id}}
+                        </a>
+                    </td>
+                    <td>{{product.productName}}</td>
+                    <td>{{product.kind}}</td>
+                    <td>{{product.size}}</td>
+                    <td>{{product.inventory_amount}}</td>
+                    <td>${{product.price}}</td>
+                    <td>{{product.description}}</td>
+                    <td><a class="btn btn-danger" ng-click="deleteProduct(product._id)">Delete</a></td>
+                </tr>
+            </table>
+
+            <div>{{getErrMsg}}</div>
+
+            <a href="/managerHome"><button class="btn btn-primary">Admin Home</button></a>
+
+        </div>
+
+
+    </div>
+
+    </div>
+
+</body>
+
+</html>

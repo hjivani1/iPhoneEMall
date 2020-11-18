@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Manager List</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script>
+		var getManagerModule = angular.module("getManager", []);
+		getManagerModule.controller("getManagerController", ($scope, $http, $location) => {
+
+			$scope.username = sessionStorage.getItem('managername');
+
+			var url = "/ManagerAccount";
+
+			$http.get(url).then((response) => {
+				$scope.managers = response.data;
+			}, (response) => {
+				$scope.getErrMsg = "Error Status: " + response.statusText;
+			});
+
+
+		});
+	</script>
+</head>
+
+<body ng-app="getManager" ng-controller="getManagerController">
+
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="/updateManagerInfo">My Info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" ng-click="clearSession()" class="color3" href="/">Log Out</a>
+			</li>
+
+		</ul>
+	</nav>
+	<div class="text-center">
+		<h2>Admins Information</h2>
+	</div>
+	<div class="container" ng-app="getManager" style="margin-top: 20px">
+
+		<div class="" ng-controller="getManagerController">
+			<table class="table table-dark table-hover">
+				<thead>
+					<th>Admin Name/Username</th>
+					<th>Email</th>
+					<th>Telephone</th>
+				</thead>
+
+				<tbody>
+					<tr ng-repeat="manager in managers">
+						<td>{{ manager.name }}</td>
+
+						<td>{{ manager.email }}</td>
+						<td>{{ manager.tel }}</td>
+					</tr>
+				</tbody>
+			</table>
+			<a href="/managerHome"><button class="btn btn-primary">Admin Home</button></a>
+		</div>
+	</div>
+</body>
+
+</html>

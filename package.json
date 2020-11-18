@@ -1,0 +1,20 @@
+{
+  "name": "cart",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./startDependencies/info"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.5",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.16.0",
+    "formidable": "^1.2.2",
+    "http-errors": "~1.6.2",
+    "mongoose": "^5.10.14",
+    "morgan": "~1.9.0",
+    "node-restful": "^0.2.6"
+  }
+}

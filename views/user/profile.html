@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>User Profile</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+</head>
+<script>
+	profileModule = angular.module('profile', []);
+	profileModule.controller('profileController', function ($scope, $http) {
+
+		// find the user
+		if (!sessionStorage.getItem('userid')) {
+			alert("Please login");
+			location.href = '/login';
+		} else {
+			var url = '/userctrl/' + sessionStorage.getItem('userid');
+			$scope.userid = sessionStorage.getItem('userid');
+			$http.get(url).then(function (response) {
+				$scope.user = response.data;
+				$scope.username = $scope.user.username;
+				$scope.newaddress = $scope.user.address;
+				$scope.newemail = $scope.user.email;
+				$scope.newtel = $scope.user.tel;
+			}, function (response) {
+				$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+			});
+		}
+
+		//edit button
+		$scope.passwordEdit = false;
+		$scope.editPassword = function () {
+			if (!$scope.passwordEdit) {
+				$scope.passwordEdit = true;
+				document.getElementById("editPassword").innerHTML = "Cancel";
+			} else {
+				document.getElementById("editPassword").innerHTML = "Edit";
+				$scope.passwordEdit = false;
+				$scope.oldPassword = null;
+				$scope.newPassword = null;
+				$scope.comfirmPassword = null;
+				$scope.postMsg = null;
+			}
+		}
+
+		//edit information
+		$scope.profilepost = function () {
+
+
+			var url = '/userctrl/' + sessionStorage.getItem('userid');
+
+			var config = {
+				headers: {
+					'Accept': 'application/json'
+				}
+			}
+
+			var pwd = $scope.newPassword;
+			var postMsg = { 'Failed': false };
+
+			if ($scope.passwordEdit) {
+				if ($scope.oldPassword != $scope.user.password) {
+					postMsg = { 'Failed': true, 'message': 'The old password is not correct' };
+					pwd = $scope.user.password;
+				} else {
+					if ($scope.newPassword == null || $scope.newPassword == "") {
+						postMsg = { 'Failed': true, 'message': 'New password cannnot be empty!' };
+						pwd = $scope.user.password;
+					} else if ($scope.newPassword != $scope.comfirmPassword) {
+						postMsg = { 'Failed': true, 'message': 'Two password doesnot match!' };
+						pwd = $scope.user.password;
+					} else if ($scope.user.password == $scope.newPassword) {
+						postMsg = { 'Failed': true, 'message': 'New password cannot be the same as the old password!' };
+						pwd = $scope.user.password;
+					}
+				}
+
+				var data = {
+					username: $scope.user.username,
+					password: pwd,
+					address: $scope.newaddress,
+					email: $scope.newemail,
+					tel: $scope.newtel
+				}
+
+				if (postMsg.Failed) {
+					$scope.postMsg = postMsg;
+				} else {
+					$http.post(url, JSON.stringify(data), config).then(function (response) {
+						$scope.postMsg = response.data;
+						if (!$scope.postMsg.Failed) {
+							$scope.oldPassword = "";
+							$scope.newPassword = "";
+							$scope.comfirmPassword = "";
+						}
+					}, function (response) {
+						$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+					});
+				}
+
+			} else {
+				var data = {
+					username: $scope.user.name,
+					password: $scope.user.password,
+					address: $scope.newaddress,
+					email: $scope.newemail,
+					tel: $scope.newtel
+				}
+
+				$http.post(url, JSON.stringify(data), config).then(function (response) {
+					$scope.postMsg = response.data;
+					if (!$scope.postMsg.Failed) {
+					}
+				}, function (response) {
+					$scope.postMsg = "Error Status: " + response.statusText;
+				});
+			}
+		}
+
+		//logout
+		$scope.logout = function () {
+			sessionStorage.clear();
+			location.href = '/';
+		}
+
+		//Delete
+		$scope.delete = function () {
+			if (confirm("You really want to delete this account?")) {
+				var url = '/userctrl/' + sessionStorage.getItem('userid');
+				$http.delete(url).then(function (response) {
+					$scope.postMsg = response.data;
+					if (!$scope.postMsg.Failed) {
+						sessionStorage.clear();
+						location.href = '/';
+					}
+				}, function (response) {
+					$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+				});
+			}
+		}
+	})
+
+	profileModule.controller('searchController', function ($scope, $http) {
+		$scope.searchitems = function (key) {
+			sessionStorage.setItem('keyword', $scope.search);
+			location.href = '/search';
+		}
+	})
+
+	profileModule.controller('transactionController', function ($scope, $http) {
+
+		var url = '/ManageTransaction/' + sessionStorage.getItem('userid');
+		$http.get(url).then(function (response) {
+			$scope.postMsg = response.data;
+
+			$scope.transactions = $scope.postMsg;
+
+		})
+	})
+</script>
+
+<body ng-app="profile">
+	<!-- Grey with black text -->
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/login">Login or Signup</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/products">Buy iPhones</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link active" href="/profile">My Account Info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/cart">Your Cart</a>
+			</li>
+		</ul>
+	</nav>
+	<div class="banner-bg banner-bg1">
+		<div class="container">
+		</div>
+		<div id="profile" class="container">
+			<div class="col-md-8 col-md-offset-2 profile-show" ng-controller="profileController">
+
+				<form class="form-horizontal" name="profileInfo">
+
+					<div class="form-group">
+						<div class="profile-btn-panel">
+							<br /><br />
+							<button value="logout" class="btn btn-default" ng-click="logout()">Logout!</button>
+							<br /><br />
+							<button value="delete" class="btn btn-default" ng-click="delete()">Delete Account</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="col-md-10 col-md-offset-1 profile-show" ng-controller="transactionController">
+				<div class="section-title text-center center">
+					<h2>Your Recent Orders</h2>
+				</div>
+
+				<div id="class" align="center" style="margin: 0cm 0cm 0pt; text-align: left">
+					<table class="table table-dark table-hover">
+						<thead>
+							<tr>
+								<th>Order #</th>
+								<th>Date</th>
+								<th>Quantity Purchased</th>
+								<th>Total Bill</th>
+							</tr>
+						</thead>
+						<tbody ng-repeat="transaction in transactions| orderBy: sortord+sortcol">
+							<tr>
+								<td>
+									{{$index+1}}
+								</td>
+								<td>
+									{{transaction.transaction_date}}
+								</td>
+								<td>
+									{{transaction.price}}
+								</td>
+								<td>
+									{{transaction.price * transaction.quantity}}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<div class="container">
+				<div class="">
+					<div class="text-center">
+						<h1>Online Company Information</h1>
+						<br />
+						<address>
+							<h2>
+								<div>One Apple Park Way<br />
+									Cupertino, CA 95014
+									<br />
+									Phone:<span> (408) 996–1010</span>
+								</div>
+							</h2>
+						</address>
+					</div>
+				</div>
+				<br />
+			</div>
+		</div>
+</body>
+
+</html>

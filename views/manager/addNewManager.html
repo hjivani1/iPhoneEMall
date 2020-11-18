@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Add New Admin</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/style.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script>
+		var newManagerModule = angular.module("addNew", []);
+		newManagerModule.controller('addNewController', function ($scope, $http) {
+
+
+			$scope.current_username = sessionStorage.getItem('managername');
+
+			$scope.clearSession = function () {
+				sessionStorage.clear();
+			}
+
+			$scope.newrolePost = function () {
+
+				var url = '/ManagerAccount/newrole';
+				var config = {
+					headers: {
+						'Accept': 'application/json'
+					}
+				};
+				var data = {
+					name: $scope.real_name,
+					username: $scope.username,
+					password: "admin",
+					email: $scope.email,
+					tel: $scope.telephone
+				};
+				$http.post(url, JSON.stringify(data), config).then(function (response) {
+					$scope.postMsg = response.data;
+					if (!$scope.postMsg.Failed) {
+						alert("Admin has been created " + $scope.real_name
+							+ "The admin password is 'admin'. Reset ASAP!");
+					}
+					else {
+					}
+				}, function (response) {
+					$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+				});
+
+				$scope.real_name = "";
+				$scope.username = "";
+				$scope.email = "";
+				$scope.telephone = "";
+			}
+		});
+	</script>
+</head>
+
+<body ng-app="addNew">
+
+
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="/updateManagerInfo">My Info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" ng-click="clearSession()" class="color3" href="/">Log Out</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/profile">My Account Info</a>
+			</li>
+		</ul>
+	</nav>
+
+
+	<br /><br />
+	<div class="container" ng-controller="addNewController">
+		<div class="text-center">
+			<h2>New Admin Signup</h2>
+		</div>
+		<form ng-submit="newrolePost()" style="margin-top: 60px" name="registerform">
+			<div class="form-group">
+				<label for="real_name">Username:</label>
+				<input ng-model="real_name" id="real_name" class="form-control" type="text" required name="real_name">
+			</div>
+
+
+
+			<div class="form-group">
+				<label for="email">Email:</label>
+				<input ng-model="email" id="email" class="form-control" type="email" required name="email">
+				<div class="alert col-md-12 text-center"
+					ng-show="registerform.email.$dirty && registerform.email.$invalid">
+					<span ng-show="registerform.email.$error.email">Illegal email</span>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="telephone">Phone Number:</label>
+				<input ng-model="telephone" id="telephone" class="form-control" type="text" required name="telephone">
+			</div>
+
+			<div>
+				<div class="text-center" ng-show="postMsg.Failed">
+					<div class="alert">{{postMsg.message}}</div>
+				</div>
+			</div>
+
+			<div>
+				<div class="text-center">
+					<button type="submit" value="Login" class="btn btn-primary">Confirm</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</body>
+
+</html>

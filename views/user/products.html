@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>iPhone Inventory</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+		integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="stylesheets/styleUser.css">
+	<link rel="stylesheet" type="text/css" href="stylesheets/newheader.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+</head>
+<script>
+	productModule = angular.module('product', []);
+	productModule.controller('productController', function ($scope, $http) {
+		var url = '/ManageProduct';
+		$http.get(url).then(function (response) {
+			$scope.postMsg = response.data;
+			$scope.products = $scope.postMsg;
+		})
+		$scope.seedetail = function (productID) {
+			var url = '/ManageProduct/' + productID;
+			$http.get(url).then(function (response) {
+				$scope.postMsg = response.data;
+				sessionStorage.setItem('product', JSON.stringify(response.data));
+				location.href = '/single';
+			}, function (response) {
+				$scope.postMsg = { 'Failed': true, 'message': "Error Status: " + response.statusText };
+			});
+		}
+	})
+</script>
+
+<body ng-app="product">
+	<!-- Grey with black text -->
+	<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+		<ul class="navbar-nav">
+			<li class="nav-item">
+				<a class="nav-link" href="/">Home</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/login">Login or Signup</a>
+			</li>
+			<li class="nav-item active">
+				<a class="nav-link" href="/products">Buy iPhones</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/profile">My Account Info</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="/cart">Your Cart</a>
+			</li>
+		</ul>
+	</nav>
+	<div class="banner-bg banner-bg1">
+		<div class="container">
+		</div>
+		<div id="products">
+			<!-- container -->
+			<div class="container" ng-controller="productController">
+				<div class="fashions">
+					<div class="text-center">
+						<h3>On sale now!</h3>
+					</div>
+					<div class="fashion-section">
+						<div class="fashion-holder" ng-show="!postMsg.Failed">
+							<div class="col-md-3 fashion-grid"
+								ng-repeat="product in products | orderBy:orderby | filter:query">
+								<div class="card">
+									<h3>{{product.productName}}</h3>
+									<p>Price: ${{product.price}}</p>
+								</div>
+								<a href="/single"><img ng-src="{{product.img}}" height="280" width="180"
+										alt="{{product.productName}}"></a>
+
+								</a>
+								<div class="fashion-view" ng-show="product.inventory_amount != 0"><span></span>
+									<div class="clearfix"></div>
+									<h4><a ng-click="seedetail(product._id)">Add to cart</a></h4>
+								</div>
+								<div class="fashion-view" ng-show="product.inventory_amount == 0"><span></span>
+									<div class="clearfix"></div>
+									<h4 class="sold-out"><a ng-click="seedetail(product._id)"><del>Item out of stock!</del></a>
+									</h4>
+								</div>
+							</div>
+							<div class="clearfix"></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="clearfix"> </div>
+				<div class="container noresult" ng-show="postMsg.Failed">
+					<h3>{{postMsg.message}}</h3>
+					<p>click <a href="/products">here</a> go back to all the products
+					<p>
+				</div>
+			</div>
+
+		</div>
+		<br />
+
+		<div class="footer">
+			<div class="container">
+				<div class="">
+					<div class="text-center">
+						<h1>Online Company Information</h1>
+						<br />
+						<address>
+							<h2>
+								<div>One Apple Park Way<br />
+									Cupertino, CA 95014
+									<br />
+									Phone:<span> (408) 996–1010</span>
+								</div>
+							</h2>
+						</address>
+					</div>
+				</div>
+				<br />
+			</div>
+		</div>
+</body>
+
+</html>
